@@ -42,7 +42,7 @@ const EditPage = () => {
     <div className="min-h-screen bg-bg-primary pb-24">
 
       {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-4">
+      {/* <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 bg-accent-blue rounded-md flex items-center justify-center">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
@@ -58,7 +58,7 @@ const EditPage = () => {
           <Bell size={18} className="text-text-muted" />
           <FaUserCircle size={22} className="text-text-muted" />
         </div>
-      </div>
+      </div> */}
 
       <CurateHero selected={selected.length} max={MAX_SLOTS} />
       <SearchBar value={search} onChange={setSearch} />

@@ -1,9 +1,21 @@
-import { Mail, Code, Share2 } from 'lucide-react';
+import { useState } from 'react';
+import { Mail, Share2, Copy, X } from 'lucide-react';
 
 const ProfileHero = () => {
-  return (
-    <section className="bg-bg-primary px-5 pt-8 pb-6">
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  
+  // This would ideally come from your props or a global state
+  const liveLink = window.location.href; 
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(liveLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <section className="bg-bg-primary px-5 pt-8 pb-6 relative">
       <div className="flex flex-col md:flex-row md:gap-8 md:items-start">
 
         {/* Left — text content */}
@@ -21,10 +33,12 @@ const ProfileHero = () => {
               <Mail size={14} />
               Contact Me
             </button>
-            <button className="border border-border-custom text-text-secondary hover:text-text-primary p-2 rounded-lg transition-colors">
-              <Code size={16} />
-            </button>
-            <button className="border border-border-custom text-text-secondary hover:text-text-primary p-2 rounded-lg transition-colors">
+            
+            {/* Share Trigger Button */}
+            <button 
+              onClick={() => setIsShareOpen(true)}
+              className="border border-border-custom text-text-secondary hover:text-text-primary p-2 rounded-lg transition-colors"
+            >
               <Share2 size={16} />
             </button>
           </div>
@@ -38,9 +52,61 @@ const ProfileHero = () => {
             className="w-full h-full object-cover"
           />
         </div>
-
       </div>
 
+      {/* Share Modal Popup */}
+      {isShareOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop blur effect */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" 
+            onClick={() => setIsShareOpen(false)} 
+          />
+
+          {/* Modal Content */}
+          <div className="relative w-full max-w-sm bg-bg-card border border-border-custom rounded-2xl p-6 shadow-2xl animate-in zoom-in fade-in duration-200">
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-text-primary font-bold text-lg">Share Profile</h3>
+              <button 
+                onClick={() => setIsShareOpen(false)}
+                className="text-text-muted hover:text-text-primary transition-colors p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-bg-primary border border-border-custom rounded-xl p-4">
+                <p className="text-text-muted text-[10px] uppercase tracking-[0.15em] mb-2 font-bold">
+                  Profile Link
+                </p>
+                <p className="text-accent-blue text-sm font-medium mb-4 break-all font-mono">
+                  {liveLink}
+                </p>
+                <button
+                  onClick={handleCopy}
+                  className={`w-full flex items-center justify-center gap-2 text-white text-sm font-semibold py-2.5 rounded-lg transition-all ${
+                    copied ? 'bg-accent-teal' : 'bg-accent-blue hover:opacity-90'
+                  }`}
+                >
+                  {copied ? (
+                    <>Copied to clipboard!</>
+                  ) : (
+                    <>
+                      <Copy size={14} />
+                      Copy Link
+                    </>
+                  )}
+                </button>
+              </div>
+              
+              <p className="text-text-muted text-[11px] text-center leading-relaxed px-4">
+                Share your RepoProfile across social platforms or in your resume.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

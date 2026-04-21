@@ -1,4 +1,5 @@
 import { FaGithub } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
@@ -14,15 +15,18 @@ const Hero = () => {
         portfolio in minutes. Stop manually updating static sites and let
         your code speak for itself.
       </p>
-
+ <Link to='/auth'>
       <button className="w-full flex items-center justify-center gap-2 bg-accent-blue hover:opacity-90 text-white font-medium text-sm py-3 rounded-lg transition-opacity mb-3">
         <FaGithub size={16} />
-        Sign in with GitHub
+       Sign in with GitHub
       </button>
+</Link>
 
+<Link to='/profile'>
       <button className="w-full border border-border-custom text-text-secondary hover:text-text-primary text-sm font-medium py-3 rounded-lg transition-colors">
         View Demo
       </button>
+      </Link>
 
     </section>
   );

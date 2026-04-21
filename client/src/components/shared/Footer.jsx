@@ -1,5 +1,6 @@
 import { FaGithub } from 'react-icons/fa';
 import { Home, PenLine, Eye, Settings as SettingsIcon } from 'lucide-react';
+import { Link, NavLink } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -16,7 +17,12 @@ const Footer = () => {
               <rect x="9" y="9" width="5" height="5" rx="1" fill="white" opacity="0.3" />
             </svg>
           </div>
-          <span className="text-text-primary text-sm font-medium">RepoProfile</span>
+           <Link 
+  to="/" 
+  className="text-text-primary font-medium text-base hover:opacity-80 transition-opacity"
+>
+  RepoProfile
+</Link>
         </div>
 
         <p className="text-text-muted text-xs mb-6">Built for architects of code.</p>
@@ -25,17 +31,17 @@ const Footer = () => {
           <div>
             <p className="text-text-secondary text-xs uppercase tracking-widest mb-3">Product</p>
             <div className="flex flex-col gap-3">
-              <a href="#" className="text-text-muted text-sm hover:text-text-primary transition-colors">Features</a>
-              <a href="#" className="text-text-muted text-sm hover:text-text-primary transition-colors">Pricing</a>
-              <a href="#" className="text-text-muted text-sm hover:text-text-primary transition-colors">View Demo</a>
+              <a href="/profile" className="text-text-muted text-sm hover:text-text-primary transition-colors">Profile</a>
+              <a href="/settings" className="text-text-muted text-sm hover:text-text-primary transition-colors">Settings</a>
+              <a href="/repos" className="text-text-muted text-sm hover:text-text-primary transition-colors">View Demo</a>
             </div>
           </div>
           <div>
             <p className="text-text-secondary text-xs uppercase tracking-widest mb-3">Github Auth</p>
             <div className="flex flex-col gap-3">
-              <a href="#" className="text-text-muted text-sm hover:text-text-primary transition-colors">Sign in</a>
-              <a href="#" className="text-text-muted text-sm hover:text-text-primary transition-colors">Privacy</a>
-              <a href="#" className="text-text-muted text-sm hover:text-text-primary transition-colors">Terms</a>
+              <a href="/auth" className="text-text-muted text-sm hover:text-text-primary transition-colors">Sign in</a>
+              <a href="/privacy" className="text-text-muted text-sm hover:text-text-primary transition-colors">Privacy</a>
+              <a href="/terms" className="text-text-muted text-sm hover:text-text-primary transition-colors">Terms</a>
             </div>
           </div>
         </div>
@@ -47,25 +53,30 @@ const Footer = () => {
       </div>
 
       {/* Bottom tab bar */}
-      <div className="border-t border-border-custom grid grid-cols-4 py-3">
-        {[
-          { icon: <Home size={18} />, label: 'Home', active: false },
-{ icon: <PenLine size={18} />, label: 'Edit', active: true },
-{ icon: <Eye size={18} />, label: 'Preview', active: false },
-{ icon: <SettingsIcon size={18} />, label: 'Settings', active: false },
 
-        ].map((item) => (
-          <button
-            key={item.label}
-            className={`flex flex-col items-center gap-1 text-xs font-medium py-1 ${
-              item.active ? 'text-accent-blue' : 'text-text-muted'
-            }`}
-          >
-            {item.icon}
-            {item.label}
-          </button>
-        ))}
-      </div>
+
+// ... inside your component
+<div className="border-t border-border-custom grid grid-cols-4 py-3">
+  {[
+    { icon: <Home size={18} />, label: 'Home', path: '/' },
+    { icon: <PenLine size={18} />, label: 'Edit', path: '/edit' },
+    { icon: <Eye size={18} />, label: 'Preview', path: '/repos' },
+    { icon: <SettingsIcon size={18} />, label: 'Settings', path: '/settings' },
+  ].map((item) => (
+    <NavLink
+      key={item.label}
+      to={item.path}
+      className={({ isActive }) => 
+        `flex flex-col items-center gap-1 text-xs font-medium py-1 transition-colors ${
+          isActive ? 'text-accent-blue' : 'text-text-muted hover:text-text-primary'
+        }`
+      }
+    >
+      {item.icon}
+      <span>{item.label}</span>
+    </NavLink>
+  ))}
+</div>
     </footer>
   );
 };

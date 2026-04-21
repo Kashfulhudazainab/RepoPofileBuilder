@@ -8,10 +8,7 @@ import EditPage from "../components/Repo/MainPage";
 const Repos = () => {
   return (
     <>
-    <Navbar/>
-    <CurateHero/>
-    <SearchBar/>
-<LanguageFilter/>
+   <Navbar/>
 <EditPage/>
 <Footer/>
 
