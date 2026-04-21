@@ -1,5 +1,5 @@
 import { FaGithub } from 'react-icons/fa';
-import { Home, PenLine, Eye, Settings } from 'lucide-react';
+import { Home, PenLine, Eye, Settings as SettingsIcon } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -49,10 +49,11 @@ const Footer = () => {
       {/* Bottom tab bar */}
       <div className="border-t border-border-custom grid grid-cols-4 py-3">
         {[
-          { icon: <Home size={18} />, label: 'Home', active: true },
-          { icon: <PenLine size={18} />, label: 'Edit', active: false },
-          { icon: <Eye size={18} />, label: 'Preview', active: false },
-          { icon: <Settings size={18} />, label: 'Settings', active: false },
+          { icon: <Home size={18} />, label: 'Home', active: false },
+{ icon: <PenLine size={18} />, label: 'Edit', active: true },
+{ icon: <Eye size={18} />, label: 'Preview', active: false },
+{ icon: <SettingsIcon size={18} />, label: 'Settings', active: false },
+
         ].map((item) => (
           <button
             key={item.label}
@@ -65,7 +66,6 @@ const Footer = () => {
           </button>
         ))}
       </div>
-
     </footer>
   );
 };
