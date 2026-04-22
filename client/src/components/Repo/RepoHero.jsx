@@ -2,7 +2,8 @@ const CurateHero = ({ selected, max = 5 }) => {
   const percentage = (selected / max) * 100;
 
   return (
-    <div className="bg-bg-card border border-border-custom rounded-xl p-5 mx-5 mt-6 mb-4">
+    
+      <div className="bg-bg-card border border-border-custom rounded-xl p-5 mx-5  mb-4">
 
       <h1 className="text-text-primary text-2xl font-bold leading-tight mb-3">
         Curate Your Showcase
