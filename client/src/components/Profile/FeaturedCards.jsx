@@ -1,53 +1,72 @@
-import RepoCard from './RepoCard';
-
-const repos = [
-  {
-    name: 'Skyline Framework',
-    description: 'A high-performance microservices framework for Go, optimized for...',
-    stars: '1.2k',
-    image: 'https://placehold.co/400x160/0d1117/2d9cdb?text=Skyline+Framework',
-    githubUrl: '#',
-    demoUrl: '#',
-  },
-  {
-    name: 'NeuralGraph DB',
-    description: 'Real-time graph analysis engine built on top of Rust with native support...',
-    stars: '840',
-    image: 'https://placehold.co/400x160/0d1117/1abc9c?text=NeuralGraph+DB',
-    githubUrl: '#',
-    demoUrl: '#',
-  },
-];
+import { useState, useEffect }  from 'react';
+import { getFeaturedRepos }      from '../../api/repoApi';
+import RepoCard                  from './RepoCard';
 
 const FeaturedRepositories = () => {
-  const visible = repos.slice(0, 3);
+  const [repos, setRepos]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(false);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const data = await getFeaturedRepos();
+        setRepos(data.slice(0, 3));
+      } catch {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, []);
 
   return (
     <section className="bg-bg-primary px-5 py-6">
-
       <p className="text-text-muted text-xs uppercase tracking-widest mb-4">
         Featured Repositories
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-        {/* Actual cards */}
-        {visible.map((repo) => (
-          <RepoCard key={repo.name} {...repo} />
-        ))}
-
-        {/* Ghost cards to keep size consistent when less than 3 */}
-        {visible.length < 3 &&
-          Array.from({ length: 3 - visible.length }).map((_, i) => (
+      {error ? (
+        <p className="text-red-400 text-sm">Failed to load repositories.</p>
+      ) : loading ? (
+        // Skeleton cards
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
             <div
-              key={`ghost-${i}`}
-              className="bg-bg-card border border-border-custom rounded-xl overflow-hidden invisible"
-            />
-          ))
-        }
+              key={i}
+              className="bg-bg-card border border-border-custom rounded-xl overflow-hidden"
+            >
+              <div className="w-full h-40 bg-border-custom animate-pulse" />
+              <div className="p-4 space-y-3">
+                <div className="h-4 w-32 bg-border-custom rounded animate-pulse" />
+                <div className="h-3 w-full bg-border-custom rounded animate-pulse" />
+                <div className="h-3 w-3/4 bg-border-custom rounded animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : repos.length === 0 ? (
+        <p className="text-text-muted text-sm">
+          No featured repos yet. Mark some repos as featured to show them here.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {repos.map((repo) => (
+            <RepoCard key={repo._id} {...repo} />
+          ))}
 
-      </div>
-
+          {/* Ghost cards to keep grid consistent */}
+          {repos.length < 3 &&
+            Array.from({ length: 3 - repos.length }).map((_, i) => (
+              <div
+                key={`ghost-${i}`}
+                className="bg-bg-card border border-border-custom rounded-xl overflow-hidden invisible"
+              />
+            ))
+          }
+        </div>
+      )}
     </section>
   );
 };
