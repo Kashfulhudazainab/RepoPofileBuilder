@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { FaGithub } from 'react-icons/fa';
+import { useState, useEffect }  from 'react';
+import { FaGithub }             from 'react-icons/fa';
 import { Mail, Lock, Eye, EyeOff, User, CheckCircle2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate }    from 'react-router-dom';
+import { useAuth }              from '../context/AuthContext';
+import { loginWithGithub }      from '../api/authApi';
 
 const passwordRules = [
   { label: 'At least 8 characters', test: (p) => p.length >= 8 },
@@ -15,6 +17,14 @@ const AuthPage = () => {
   const [showConfirm, setShowConf]  = useState(false);
   const [agreed, setAgreed]         = useState(false);
   const [form, setForm]             = useState({ name: '', email: '', password: '', confirm: '' });
+
+  const { user }   = useAuth();
+  const navigate   = useNavigate();
+
+  useEffect(() => {
+    if (user) navigate('/profile');
+ 
+  }, [user]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -74,7 +84,10 @@ const AuthPage = () => {
         </p>
 
         {/* GitHub OAuth */}
-        <button className="w-full flex items-center justify-center gap-2 bg-bg-primary border border-border-custom hover:border-accent-blue text-text-primary text-sm font-medium py-3 rounded-xl transition-colors mb-5">
+        <button
+          onClick={loginWithGithub}
+          className="w-full flex items-center justify-center gap-2 bg-bg-primary border border-border-custom hover:border-accent-blue text-text-primary text-sm font-medium py-3 rounded-xl transition-colors mb-5"
+        >
           <FaGithub size={17} />
           {tab === 'login' ? 'Continue with GitHub' : 'Sign up with GitHub'}
         </button>
@@ -90,6 +103,7 @@ const AuthPage = () => {
 
         {/* Form Fields */}
         <div className="space-y-4">
+
           {/* Name — register only */}
           {tab === 'register' && (
             <div>
@@ -142,9 +156,10 @@ const AuthPage = () => {
               </button>
             </div>
           </div>
+
         </div>
 
-        {/* Password Footer (Forgot/Rules) */}
+        {/* Password Footer (Forgot / Rules) */}
         <div className="mt-2 mb-5">
           {tab === 'login' ? (
             <div className="flex justify-end">
@@ -199,7 +214,7 @@ const AuthPage = () => {
           </div>
         )}
 
-        {/* Terms and Conditions Checkbox — register only */}
+        {/* Terms and Conditions — register only */}
         {tab === 'register' && (
           <div className="flex items-start gap-3 mb-6 px-1">
             <div className="relative flex items-center">
@@ -233,11 +248,11 @@ const AuthPage = () => {
         )}
 
         {/* Submit */}
-        <button 
+        <button
           disabled={tab === 'register' && !agreed}
           className={`w-full bg-accent-blue text-white font-semibold text-sm py-3 rounded-xl transition-all shadow-lg shadow-accent-blue/20 ${
-            tab === 'register' && !agreed 
-              ? 'opacity-40 cursor-not-allowed' 
+            tab === 'register' && !agreed
+              ? 'opacity-40 cursor-not-allowed'
               : 'hover:opacity-90 hover:-translate-y-0.5'
           }`}
         >

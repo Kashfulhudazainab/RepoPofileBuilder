@@ -1,12 +1,13 @@
-import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
-import { FaGithub } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useState }          from 'react';
+import { Menu, X }           from 'lucide-react';
+import { FaGithub }          from 'react-icons/fa';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth }           from '../../context/AuthContext';
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate();
+  const navigate                = useNavigate();
+  const { user, logout }        = useAuth();
 
   return (
     <nav className="bg-bg-primary border-b border-border-custom w-full">
@@ -24,50 +25,74 @@ const Navbar = () => {
               <rect x="9" y="9" width="5" height="5" rx="1" fill="white" opacity="0.3" />
             </svg>
           </div>
-          <Link 
-  to="/" 
-  className="text-text-primary font-medium text-base hover:opacity-80 transition-opacity"
->
-  RepoProfile
-</Link>
+          <Link to="/" className="text-text-primary font-medium text-base hover:opacity-80 transition-opacity">
+            RepoProfile
+          </Link>
         </div>
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-6">
-          <a href="/"         className="text-text-secondary text-sm hover:text-text-primary transition-colors">Home</a>
-          <a href="/profile"  className="text-text-secondary text-sm hover:text-text-primary transition-colors">Profile</a>
-          <a href="/settings" className="text-text-secondary text-sm hover:text-text-primary transition-colors">Settings</a>
-          <a href="/edit"     className="text-text-secondary text-sm hover:text-text-primary transition-colors">Edit</a>
-          <a href="/repos"    className="text-text-secondary text-sm hover:text-text-primary transition-colors">Repositories</a>
+          <Link to="/"         className="text-text-secondary text-sm hover:text-text-primary transition-colors">Home</Link>
+          <Link to="/profile"  className="text-text-secondary text-sm hover:text-text-primary transition-colors">Profile</Link>
+          <Link to="/settings" className="text-text-secondary text-sm hover:text-text-primary transition-colors">Settings</Link>
+          <Link to="/edit"     className="text-text-secondary text-sm hover:text-text-primary transition-colors">Edit</Link>
+          <Link to="/repos"    className="text-text-secondary text-sm hover:text-text-primary transition-colors">Repositories</Link>
         </div>
 
         {/* CTA + Hamburger */}
         <div className="flex items-center gap-2">
 
-          {/* Desktop buttons */}
+          {/* Desktop */}
           <div className="hidden md:flex items-center gap-2">
-            {/* <button
-              onClick={() => navigate('/auth')}
-              className="text-text-secondary hover:text-text-primary text-sm font-medium px-4 py-2 rounded-lg border border-border-custom hover:border-accent-blue transition-colors"
-            >
-              Log In
-            </button> */}
-            <button
-              onClick={() => navigate('/auth')}
-              className="flex items-center gap-2 bg-accent-blue hover:opacity-90 text-white text-sm font-medium px-4 py-2 rounded-lg transition-opacity"
-            >
-              <FaGithub size={14} />
-              Sign Up
-            </button>
+            {user ? (
+              <>
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-8 h-8 rounded-full border border-border-custom"
+                />
+                <span className="text-text-secondary text-sm">{user.username}</span>
+                <button
+                  onClick={logout}
+                  className="text-text-muted hover:text-text-primary text-sm border border-border-custom px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="text-text-secondary hover:text-text-primary text-sm font-medium px-4 py-2 rounded-lg border border-border-custom hover:border-accent-blue transition-colors"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="flex items-center gap-2 bg-accent-blue hover:opacity-90 text-white text-sm font-medium px-4 py-2 rounded-lg transition-opacity"
+                >
+                  <FaGithub size={14} />
+                  Sign Up
+                </button>
+              </>
+            )}
           </div>
 
-          {/* Mobile: show login button + hamburger */}
-          <button
-            onClick={() => navigate('/auth')}
-            className="md:hidden text-text-secondary hover:text-text-primary text-sm border border-border-custom px-3 py-1.5 rounded-lg transition-colors"
-          >
-            Log In
-          </button>
+          {/* Mobile */}
+          {user ? (
+            <img
+              src={user.avatar}
+              alt={user.name}
+              className="md:hidden w-8 h-8 rounded-full border border-border-custom"
+            />
+          ) : (
+            <button
+              onClick={() => navigate('/auth')}
+              className="md:hidden text-text-secondary hover:text-text-primary text-sm border border-border-custom px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Log In
+            </button>
+          )}
           <button
             className="md:hidden text-text-secondary"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -81,18 +106,27 @@ const Navbar = () => {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden bg-bg-card border-t border-border-custom px-5 py-4 flex flex-col gap-4">
-          <a href="/"         className="text-text-secondary text-sm hover:text-text-primary transition-colors">Home</a>
-          <a href="/profile"  className="text-text-secondary text-sm hover:text-text-primary transition-colors">Profile</a>
-          <a href="/settings" className="text-text-secondary text-sm hover:text-text-primary transition-colors">Settings</a>
-          <a href="/edit"     className="text-text-secondary text-sm hover:text-text-primary transition-colors">Edit</a>
-          <a href="/repos"    className="text-text-secondary text-sm hover:text-text-primary transition-colors">Repositories</a>
-          <button
-            onClick={() => navigate('/auth')}
-            className="flex items-center justify-center gap-2 bg-accent-blue text-white text-sm font-medium py-2.5 rounded-lg"
-          >
-            <FaGithub size={14} />
-            Sign Up with GitHub
-          </button>
+          <Link to="/"         className="text-text-secondary text-sm hover:text-text-primary transition-colors" onClick={() => setMenuOpen(false)}>Home</Link>
+          <Link to="/profile"  className="text-text-secondary text-sm hover:text-text-primary transition-colors" onClick={() => setMenuOpen(false)}>Profile</Link>
+          <Link to="/settings" className="text-text-secondary text-sm hover:text-text-primary transition-colors" onClick={() => setMenuOpen(false)}>Settings</Link>
+          <Link to="/edit"     className="text-text-secondary text-sm hover:text-text-primary transition-colors" onClick={() => setMenuOpen(false)}>Edit</Link>
+          <Link to="/repos"    className="text-text-secondary text-sm hover:text-text-primary transition-colors" onClick={() => setMenuOpen(false)}>Repositories</Link>
+          {user ? (
+            <button
+              onClick={() => { logout(); setMenuOpen(false); }}
+              className="text-left text-red-400 text-sm font-medium"
+            >
+              Logout
+            </button>
+          ) : (
+            <button
+              onClick={() => { navigate('/auth'); setMenuOpen(false); }}
+              className="flex items-center justify-center gap-2 bg-accent-blue text-white text-sm font-medium py-2.5 rounded-lg"
+            >
+              <FaGithub size={14} />
+              Sign Up with GitHub
+            </button>
+          )}
         </div>
       )}
 

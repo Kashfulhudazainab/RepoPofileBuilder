@@ -6,6 +6,7 @@ import TechStack from '../components/Edit/TechStack';
 import FeaturedProjects from '../components/Edit/FeaturedProjects';
 import SocialConnections from '../components/Edit/SocialConnections';
 import MobilePreview from '../components/Edit/MobilePreview';
+import { Link } from 'react-router-dom';
 
 const Edit = () => {
   const [activeTab, setActiveTab] = useState('edit');
@@ -35,6 +36,7 @@ const Edit = () => {
             <Pencil size={14} />
             Edit
           </button>
+          <Link to='/profile'>
           <button
             onClick={() => setActiveTab('preview')}
             className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-colors ${
@@ -46,6 +48,7 @@ const Edit = () => {
             <Eye size={14} />
             Live Preview
           </button>
+          </Link>
         </div>
 
         {/* Sections */}
