@@ -1,5 +1,13 @@
 import express                                        from 'express'
-import { githubLogin, githubCallback, getMe, logout,updateSocials } from '../controllers/authController.js'
+import {
+  githubLogin,
+  githubCallback,
+  getMe,
+  logout,
+  updateSocials,
+  disconnectGithub,
+  deleteAccount,
+} from '../controllers/authController.js'
 import protect                                        from '../middleware/protect.js'
 
 const router = express.Router()
@@ -9,5 +17,7 @@ router.get('/github/callback', githubCallback)
 router.get('/me',              protect, getMe)
 router.get('/logout',          protect, logout)
 router.put('/socials', protect, updateSocials)
+router.patch('/github/disconnect', protect, disconnectGithub)
+router.delete('/account', protect, deleteAccount)
 
 export default router

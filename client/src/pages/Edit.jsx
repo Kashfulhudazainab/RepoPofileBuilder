@@ -7,9 +7,11 @@ import FeaturedProjects from '../components/Edit/FeaturedProjects';
 import SocialConnections from '../components/Edit/SocialConnections';
 import MobilePreview from '../components/Edit/MobilePreview';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Edit = () => {
   const [activeTab, setActiveTab] = useState('edit');
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -54,7 +56,7 @@ const Edit = () => {
         {/* Sections */}
         <TechStack />
         <FeaturedProjects />
-        <SocialConnections />
+        <SocialConnections user={user} />
         {/* <MobilePreview /> */}
 
       </div>

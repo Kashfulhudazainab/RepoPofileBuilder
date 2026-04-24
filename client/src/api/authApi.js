@@ -22,3 +22,13 @@ export const saveSocials = async (socials) => {
   const res = await api.put('/api/auth/socials', socials)
   return res.data
 }
+
+export const disconnectGithub = async () => {
+  const res = await api.patch('/api/auth/github/disconnect')
+  return res.data
+}
+
+export const deleteAccount = async () => {
+  const res = await api.delete('/api/auth/account')
+  return res.data
+}

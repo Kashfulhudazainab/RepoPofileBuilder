@@ -1,23 +1,66 @@
-import { useState } from 'react';
-import { Link2, Copy, Trash2, Bell, Shield, BarChart2, Wrench } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link2, Copy, Trash2 } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import Navbar from '../components/shared/Navbar';
 import Footer from '../components/shared/Footer';
-import { Link, redirect } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { getMe, disconnectGithub, deleteAccount } from '../api/authApi';
 
 
 const Settings = () => {
-  const [subdomain, setSubdomain] = useState('alexrivera');
+  const { user, setUser, loading, logout } = useAuth();
+  const navigate = useNavigate();
+  const [subdomain, setSubdomain] = useState('');
+  const [isSubdomainEdited, setIsSubdomainEdited] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [disconnecting, setDisconnecting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [visibilityOn, setVisibilityOn] = useState(true);
-  const [notifications, setNotifications] = useState({
-    analytics: true,
-    integration: true,
-    marketing: false,
-    security: true,
-  });
 
   const liveLink = `https://${subdomain}.repoprofile.com`;
+
+  useEffect(() => {
+    if (!isSubdomainEdited && user?.username) {
+      setSubdomain(user.username);
+    }
+  }, [user, isSubdomainEdited]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const refreshUser = async () => {
+      setRefreshing(true);
+      setError('');
+      try {
+        const data = await getMe();
+        if (isMounted) setUser(data);
+      } catch {
+        if (isMounted) setError('Unable to refresh your settings data right now.');
+      } finally {
+        if (isMounted) setRefreshing(false);
+      }
+    };
+
+    refreshUser();
+    window.addEventListener('focus', refreshUser);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('focus', refreshUser);
+    };
+  }, [setUser]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+        <p className="text-text-secondary text-sm">Loading settings...</p>
+      </div>
+    );
+  }
 
   const handleCopy = () => {
     navigator.clipboard.writeText(liveLink);
@@ -25,8 +68,54 @@ const Settings = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const toggleNotif = (key) =>
-    setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
+  const handleDisconnectGithub = async () => {
+    const confirmed = window.confirm(
+      'Disconnect GitHub from your account? Repo sync and GitHub-powered features will stop until you reconnect.'
+    );
+    if (!confirmed) return;
+
+    setDisconnecting(true);
+    setActionError('');
+    try {
+      await disconnectGithub();
+      await logout();
+      setUser(null);
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch {
+        // Storage access can fail in restricted environments.
+      }
+      navigate('/auth', { replace: true });
+    } catch (err) {
+      setActionError(err?.response?.data?.message || 'Failed to disconnect GitHub.');
+    } finally {
+      setDisconnecting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const typed = window.prompt('This action is permanent. Type DELETE to confirm account deletion.');
+    if (typed !== 'DELETE') return;
+
+    setDeleting(true);
+    setActionError('');
+    try {
+      await deleteAccount();
+      setUser(null);
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch {
+        // Storage access can fail in restricted environments.
+      }
+      navigate('/auth');
+    } catch (err) {
+      setActionError(err?.response?.data?.message || 'Failed to delete account.');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -38,6 +127,15 @@ const Settings = () => {
           Configure your portfolio identity, visibility preferences, and platform
           integrations from a single control center.
         </p>
+        {error && (
+          <p className="text-red-400 text-xs mb-4">{error}</p>
+        )}
+        {refreshing && (
+          <p className="text-text-muted text-xs mb-4">Refreshing account data...</p>
+        )}
+        {actionError && (
+          <p className="text-red-400 text-xs mb-4">{actionError}</p>
+        )}
 
         {/* Profile Card */}
         <div className="bg-bg-card border border-border-custom rounded-xl p-4 mb-6">
@@ -45,16 +143,20 @@ const Settings = () => {
             <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0"
                  style={{ background: 'linear-gradient(135deg, #0f4c75, #1abc9c)' }}>
               <img
-                src="https://placehold.co/56x56/0f4c75/ffffff?text=AR"
-                alt="Alex Rivera"
+                src={user?.avatar || 'https://placehold.co/56x56/0f4c75/ffffff?text=U'}
+                alt={user?.name || user?.username || 'User'}
                 className="w-full h-full object-cover"
               />
             </div>
             <div>
-              <p className="text-text-primary text-base font-semibold">Alex Rivera</p>
-              <p className="text-text-secondary text-xs mb-1">alex.rivera@devstudio.com</p>
+              <p className="text-text-primary text-base font-semibold">
+                {user?.name || user?.username || 'User'}
+              </p>
+              <p className="text-text-secondary text-xs mb-1">
+                {user?.email || 'No public email set'}
+              </p>
               <span className="bg-accent-blue bg-opacity-20 text-accent-blue text-xs px-2 py-0.5 rounded-md font-medium">
-                PRO ARCHITECT
+                {user?.title || 'DEVELOPER'}
               </span>
             </div>
           </div>
@@ -77,7 +179,10 @@ const Settings = () => {
             <input
               type="text"
               value={subdomain}
-              onChange={(e) => setSubdomain(e.target.value)}
+                onChange={(e) => {
+                  setIsSubdomainEdited(true);
+                  setSubdomain(e.target.value);
+                }}
               className="flex-1 bg-bg-card border border-border-custom rounded-l-lg px-4 py-2.5 text-text-primary text-sm outline-none focus:border-accent-blue transition-colors"
             />
             <span className="bg-bg-card border border-l-0 border-border-custom rounded-r-lg px-3 py-2.5 text-text-muted text-sm">
@@ -140,57 +245,21 @@ const Settings = () => {
                 <FaGithub size={18} className="text-text-secondary" />
                 <div>
                   <p className="text-text-primary text-sm font-semibold">GitHub Connection</p>
-                  <p className="text-accent-blue text-xs">Connected as @arivera-dev</p>
+                  <p className="text-accent-blue text-xs">
+                    {user?.githubToken
+                      ? `Connected as @${user?.username || 'unknown-user'}`
+                      : 'Not connected'}
+                  </p>
                 </div>
               </div>
-              <button className="border border-red-500 text-red-400 hover:bg-red-500 hover:text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
-                DISCONNECT
+              <button
+                onClick={handleDisconnectGithub}
+                disabled={disconnecting || !user?.githubToken}
+                className="border border-red-500 text-red-400 hover:bg-red-500 hover:text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {disconnecting ? 'DISCONNECTING...' : 'DISCONNECT'}
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Notification Preferences */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Bell size={16} className="text-accent-blue" />
-            <h2 className="text-text-primary text-lg font-bold">Notification Preferences</h2>
-          </div>
-
-          <div className="bg-bg-card border border-border-custom rounded-xl overflow-hidden">
-            {[
-              { key: 'analytics',   icon: <BarChart2 size={15} className="text-accent-blue" />, title: 'Portfolio Analytics',  desc: 'Weekly digest of page views and repository clicks.' },
-              { key: 'integration', icon: <Wrench size={15} className="text-accent-blue" />,    title: 'Integration Status',   desc: 'Alerts when repo syncs fail or need re-auth.' },
-              { key: 'marketing',   icon: <Bell size={15} className="text-text-muted" />,        title: 'Marketing & Tips',     desc: 'Occasional updates on new themes and features.' },
-              { key: 'security',    icon: <Shield size={15} className="text-accent-blue" />,     title: 'Security Alerts',      desc: 'Critical notifications about your account access.' },
-            ].map((item, i, arr) => (
-              <div
-                key={item.key}
-                className={`flex items-start gap-3 p-4 ${i < arr.length - 1 ? 'border-b border-border-custom' : ''}`}
-              >
-                <button
-                  onClick={() => toggleNotif(item.key)}
-                  className={`mt-0.5 w-5 h-5 rounded flex-shrink-0 border flex items-center justify-center transition-colors ${
-                    notifications[item.key]
-                      ? 'bg-accent-blue border-accent-blue'
-                      : 'bg-transparent border-border-custom'
-                  }`}
-                >
-                  {notifications[item.key] && (
-                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                      <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                </button>
-                <div className="flex-1">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    {item.icon}
-                    <p className="text-text-primary text-sm font-semibold">{item.title}</p>
-                  </div>
-                  <p className="text-text-secondary text-xs leading-relaxed">{item.desc}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 
@@ -204,8 +273,12 @@ const Settings = () => {
             Permanently delete your profile and all associated data. This action is
             irreversible and will immediately take down your portfolio URL.
           </p>
-          <button className="w-full bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-3 rounded-lg transition-colors">
-            Delete Account
+          <button
+            onClick={handleDeleteAccount}
+            disabled={deleting}
+            className="w-full bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {deleting ? 'Deleting Account...' : 'Delete Account'}
           </button>
         </div>
       </div>

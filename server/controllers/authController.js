@@ -1,6 +1,7 @@
 import axios  from 'axios'
 import jwt    from 'jsonwebtoken'
 import User   from '../models/User.js'
+import Repo   from '../models/Repo.js'
 
 // Step 1 — redirect to GitHub
 export const githubLogin = (req, res) => {
@@ -109,5 +110,35 @@ export const updateSocials = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to update socials' });
+  }
+}
+
+export const disconnectGithub = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+    if (!user) return res.status(404).json({ message: 'User not found' })
+
+    user.githubToken = null
+    await user.save()
+
+    res.json({ message: 'GitHub disconnected', user })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Failed to disconnect GitHub' })
+  }
+}
+
+export const deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user._id
+
+    await Repo.deleteMany({ user: userId })
+    await User.findByIdAndDelete(userId)
+
+    res.clearCookie('token')
+    res.json({ message: 'Account deleted successfully' })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Failed to delete account' })
   }
 }
