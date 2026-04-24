@@ -1,60 +1,110 @@
-import { useState } from 'react';
-import { Trash2, Pencil, GripVertical } from 'lucide-react';
-import { FaGithub } from 'react-icons/fa';
-
-const initialRepos = [
-  { id: 1, name: 'nebula-core-engine',      desc: 'A high-performance physics engine...' },
-  { id: 2, name: 'quantum-auth-provider',   desc: 'Passwordless authentication...' },
-  { id: 3, name: 'flux-data-visualizer',    desc: 'Real-time D3.js...' },
-];
+import { useState, useEffect } from 'react';
+import { Trash2, GripVertical, Loader2, FolderKanban } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { getMyRepos, toggleFeatured } from '../../api/repoApi';
 
 const FeaturedProjects = () => {
-  const [repos, setRepos] = useState(initialRepos);
+  const [repos, setRepos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const removeRepo = (id) => {
-    setRepos(repos.filter((r) => r.id !== id));
+  // 1. Fetch only the repos you manually selected on the "Edit Page"
+  const fetchFeatured = async () => {
+    try {
+      const data = await getMyRepos();
+      // Filter logic: Only show projects where featured is true
+      const selectedRepos = data.filter((r) => r.featured === true);
+      setRepos(selectedRepos);
+    } catch (err) {
+      console.error("Failed to load featured projects", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="bg-bg-card border border-border-custom rounded-xl p-4 mb-4">
+  useEffect(() => {
+    fetchFeatured();
+  }, []);
 
+  // 2. Remove Repo (Updates DB and local state)
+  const removeRepo = async (id) => {
+    try {
+      await toggleFeatured(id); // Turns featured: false in backend
+      setRepos((prev) => prev.filter((r) => (r._id || r.id) !== id));
+    } catch (err) {
+      console.error("Remove failed", err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-bg-card border border-border-custom rounded-xl p-8 flex justify-center items-center">
+        <Loader2 className="animate-spin text-accent-blue" size={20} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-bg-card border border-border-custom rounded-xl p-4 mb-4 shadow-sm">
+      
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
-          <span className="text-yellow-400 text-base">★</span>
-          <h2 className="text-text-primary text-base font-bold">Featured Projects</h2>
+          <span className="text-yellow-400 text-lg">★</span>
+          <h2 className="text-text-primary text-base font-bold tracking-tight">Featured Projects</h2>
         </div>
-        <button className="flex items-center gap-1.5 bg-accent-teal bg-opacity-20 text-accent-teal text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-opacity-30 transition-colors">
-          <FaGithub size={12} />
-          Import from GitHub
-        </button>
+        <Link 
+          to="/repos" 
+          className="text-accent-blue text-xs font-semibold hover:underline bg-accent-blue/5 px-3 py-1.5 rounded-lg border border-accent-blue/10"
+        >
+          Manage All
+        </Link>
       </div>
 
       {/* Repo list */}
-      <div className="flex flex-col gap-2">
-        {repos.map((repo) => (
-          <div
-            key={repo.id}
-            className="flex items-center gap-3 bg-bg-primary border border-border-custom rounded-xl p-3"
-          >
-            <GripVertical size={16} className="text-text-muted flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-text-primary text-sm font-semibold truncate">{repo.name}</p>
-              <p className="text-text-secondary text-xs truncate">{repo.desc}</p>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <button className="text-text-muted hover:text-red-400 transition-colors"
-                      onClick={() => removeRepo(repo.id)}>
-                <Trash2 size={15} />
-              </button>
-              <button className="text-text-muted hover:text-accent-blue transition-colors">
-                <Pencil size={15} />
-              </button>
-            </div>
+      <div className="flex flex-col gap-2.5">
+        {repos.length === 0 ? (
+          <div className="text-center py-10 border border-dashed border-border-custom rounded-xl bg-bg-primary/30">
+            <FolderKanban className="mx-auto text-text-muted mb-2" size={24} />
+            <p className="text-text-muted text-xs">No projects featured yet.</p>
+            <Link to="/repos" className="text-accent-blue text-[10px] uppercase font-bold mt-2 block">
+              Add Projects +
+            </Link>
           </div>
-        ))}
-      </div>
+        ) : (
+          repos.map((repo) => (
+            <div
+              key={repo._id || repo.id}
+              className="flex items-center gap-3 bg-bg-primary border border-border-custom rounded-xl p-3.5 group hover:border-text-muted/50 transition-all"
+            >
+              <GripVertical size={16} className="text-text-muted flex-shrink-0 cursor-grab" />
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-text-primary text-sm font-bold truncate">{repo.name}</p>
+                  {repo.language && (
+                    <span className="text-[10px] text-accent-blue font-medium px-1.5 py-0.5 bg-accent-blue/5 rounded border border-accent-blue/10">
+                      {repo.language}
+                    </span>
+                  )}
+                </div>
+                <p className="text-text-secondary text-xs truncate mt-0.5 font-medium">
+                  {repo.description || "No description provided."}
+                </p>
+              </div>
 
+              <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button 
+                  className="p-2 text-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                  onClick={() => removeRepo(repo._id || repo.id)}
+                  title="Remove from featured"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 };

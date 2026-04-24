@@ -92,7 +92,7 @@ const ProfileHero = ({ user }) => {
 
         {/* Right — avatar */}
         <div
-          className="w-full md:w-56 h-64 rounded-xl overflow-hidden flex-shrink-0"
+          className="w-full md:w-56 h-56 rounded-full overflow-hidden flex-shrink-0"
           style={{ background: 'linear-gradient(135deg, #0f4c75, #1abc9c)' }}
         >
           <img

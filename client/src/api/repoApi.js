@@ -8,7 +8,7 @@ export const syncRepos = async () => {
 
 // Get all repos of logged in user
 export const getMyRepos = async () => {
-  const res = await api.get('/api/repos/mine')
+  const res = await api.get('/api/repos/my')
   return res.data
 }
 

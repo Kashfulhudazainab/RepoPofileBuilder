@@ -1,6 +1,7 @@
 import { useState, useEffect }  from 'react';
 import { getFeaturedRepos }      from '../../api/repoApi';
 import RepoCard                  from './RepoCard';
+import { Link } from 'react-router-dom';
 
 const FeaturedRepositories = () => {
   const [repos, setRepos]     = useState([]);
@@ -11,7 +12,7 @@ const FeaturedRepositories = () => {
     const fetch = async () => {
       try {
         const data = await getFeaturedRepos();
-        setRepos(data.slice(0, 3));
+        setRepos(data);
       } catch {
         setError(true);
       } finally {
@@ -23,9 +24,17 @@ const FeaturedRepositories = () => {
 
   return (
     <section className="bg-bg-primary px-5 py-6">
+      <div className="flex items-center justify-between mb-5">
       <p className="text-text-muted text-xs uppercase tracking-widest mb-4">
-        Featured Repositories
+        Featured Repositories from github
       </p>
+       <Link 
+          to="/repos" 
+          className="text-accent-blue text-xs font-semibold hover:underline bg-accent-blue/5 px-3 py-1.5 rounded-lg border border-accent-blue/10"
+        >
+          Manage All
+        </Link>
+</div>
 
       {error ? (
         <p className="text-red-400 text-sm">Failed to load repositories.</p>
