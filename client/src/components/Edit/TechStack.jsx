@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Loader2, Sparkles } from 'lucide-react';
-import { getMyLanguages } from '../../api/repoApi';
+import { getMyLanguages, saveCustomStack } from '../../api/repoApi'; // ← add saveCustomStack
 
 const TechStack = () => {
   const [skills, setSkills] = useState([]);
@@ -11,11 +11,7 @@ const TechStack = () => {
     const fetchLanguages = async () => {
       try {
         const data = await getMyLanguages();
-        
-        // If data is an object like { JavaScript: 1234, React: 567 }, get the keys
-        // If it's already an array, use it directly
         const languages = Array.isArray(data) ? data : Object.keys(data);
-        
         setSkills(languages);
       } catch (err) {
         console.error("Failed to fetch languages:", err);
@@ -23,26 +19,24 @@ const TechStack = () => {
         setLoading(false);
       }
     };
-
     fetchLanguages();
   }, []);
 
-const addSkill = () => {
-  const trimmed = input.trim();
-  if (trimmed && !skills.includes(trimmed)) {
-    const updatedSkills = [...skills, trimmed];
-    setSkills(updatedSkills);
-    // Save to browser memory
-    localStorage.setItem('custom_tech_stack', JSON.stringify(updatedSkills));
-    setInput('');
-  }
-};
+  const addSkill = async () => {
+    const trimmed = input.trim();
+    if (trimmed && !skills.includes(trimmed)) {
+      const newList = [...skills, trimmed];
+      setSkills(newList);
+      setInput('');
+      await saveCustomStack(newList); // ← now correctly imported
+    }
+  };
 
-const removeSkill = (skill) => {
-  const updatedSkills = skills.filter((s) => s !== skill);
-  setSkills(updatedSkills);
-  localStorage.setItem('custom_tech_stack', JSON.stringify(updatedSkills));
-};
+  const removeSkill = async (skill) => {
+    const updatedSkills = skills.filter((s) => s !== skill);
+    setSkills(updatedSkills);
+    await saveCustomStack(updatedSkills); // ← use same saveCustomStack
+  };
 
   if (loading) {
     return (
@@ -54,7 +48,7 @@ const removeSkill = (skill) => {
 
   return (
     <div className="bg-bg-card border border-border-custom rounded-xl p-4 mb-4 shadow-sm">
-      
+
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
@@ -88,7 +82,7 @@ const removeSkill = (skill) => {
         )}
       </div>
 
-      {/* Input Group */}
+      {/* Input */}
       <div className="flex items-center">
         <input
           type="text"
@@ -105,7 +99,7 @@ const removeSkill = (skill) => {
           Add
         </button>
       </div>
-      
+
       <p className="text-[10px] text-text-muted mt-3 italic">
         * Initial stack generated automatically from your GitHub activity.
       </p>

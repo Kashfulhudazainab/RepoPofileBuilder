@@ -1,5 +1,6 @@
 import axios from 'axios'
 import Repo  from '../models/Repo.js'
+import User from '../models/User.js';
 
 // Fetch from GitHub and save to DB
 export const syncRepos = async (req, res) => {
@@ -75,20 +76,58 @@ export const getFeaturedRepos = async (req, res) => {
   res.json(repos)
 }
 
-// 👇 NEW — get unique languages from user's repos
+// // 👇 NEW — get unique languages from user's repos
+// export const getMyLanguages = async (req, res) => {
+//   try {
+//     const langs = await Repo.distinct('language', {
+//       user:     req.user._id,
+//       language: { $ne: null },  // exclude null languages
+//     })
+//     res.json(langs)
+//   } catch (err) {
+//     console.error(err)
+//     res.status(500).json({ message: 'Failed to fetch languages' })
+//   }
+// }
+
+// 1. UPDATE: Save manual skills to the User profile
+export const updateCustomLanguages = async (req, res) => {
+  try {
+    const { languages } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { customLanguages: languages },
+      { new: true }
+    );
+    res.json(user.customLanguages);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update skills' });
+  }
+};
+
+
 export const getMyLanguages = async (req, res) => {
   try {
-    const langs = await Repo.distinct('language', {
-      user:     req.user._id,
-      language: { $ne: null },  // exclude null languages
-    })
-    res.json(langs)
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ message: 'Failed to fetch languages' })
-  }
-}
+    // 1. Get languages from the GitHub Repositories
+    const githubLangs = await Repo.distinct('language', {
+      user: req.user._id,
+      language: { $ne: null },
+    });
 
+    // 2. Get the manual skills you added via the Tech Stack editor
+    const user = await User.findById(req.user._id);
+    const customLangs = user?.customLanguages || [];
+
+    // 3. Merge them and remove duplicates
+    // This ensures that 'JavaScript' doesn't appear twice if it's in both lists.
+    const combinedList = [...new Set([...githubLangs, ...customLangs])];
+    
+    res.json(combinedList);
+  } catch (err) {
+    console.error("Error fetching merged languages:", err);
+    res.status(500).json({ message: 'Failed to fetch languages' });
+  }
+};
 
 
 

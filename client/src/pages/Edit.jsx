@@ -55,7 +55,7 @@ const Edit = () => {
         <TechStack />
         <FeaturedProjects />
         <SocialConnections />
-        <MobilePreview />
+        {/* <MobilePreview /> */}
 
       </div>
 

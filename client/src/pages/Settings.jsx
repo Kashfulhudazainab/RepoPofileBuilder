@@ -3,6 +3,8 @@ import { Link2, Copy, Trash2, Bell, Shield, BarChart2, Wrench } from 'lucide-rea
 import { FaGithub } from 'react-icons/fa';
 import Navbar from '../components/shared/Navbar';
 import Footer from '../components/shared/Footer';
+import { Link, redirect } from 'react-router-dom';
+
 
 const Settings = () => {
   const [subdomain, setSubdomain] = useState('alexrivera');
@@ -56,9 +58,11 @@ const Settings = () => {
               </span>
             </div>
           </div>
+          <Link to='/edit'>
           <button className="w-full bg-bg-primary border border-border-custom text-text-secondary hover:text-text-primary text-sm font-medium py-2.5 rounded-lg transition-colors">
             Update Profile
           </button>
+          </Link>
         </div>
 
         {/* Portfolio URL Management */}

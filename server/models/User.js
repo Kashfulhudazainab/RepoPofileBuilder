@@ -8,7 +8,10 @@ const userSchema = new mongoose.Schema({
   avatar:      { type: String },
   bio:         { type: String },
   githubToken: { type: String },
-  
+  customLanguages: {
+    type: [String],
+    default: []
+  }
 }, { timestamps: true })
 
 export default mongoose.model('User', userSchema)

@@ -17,6 +17,11 @@ export const getMyLanguages   = async () => {
   return res.data
 }
 
+export const saveCustomStack = async (languages) => {
+  const res = await api.put('/api/repos/languages/custom', { languages });
+  return res.data;
+};
+
 
 export const getFeaturedRepos = async () => {
   const res = await api.get('/api/repos/my')
