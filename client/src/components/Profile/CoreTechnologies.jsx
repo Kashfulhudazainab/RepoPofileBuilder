@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getMyLanguages } from '../../api/repoApi';
-
+import { Link } from 'react-router-dom';
 
 const CoreTechnologies = () => {
   const [languages, setLanguages] = useState([]);
@@ -28,11 +28,17 @@ const CoreTechnologies = () => {
 
   return (
     <section className="bg-bg-primary px-5 py-6">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex justify-between items-center gap-2 mb-4">
        
         <p className="text-text-muted text-[10px] font-bold uppercase tracking-[0.2em]">
           Core Technologies
         </p>
+         <Link 
+          to="/edit" 
+          className="text-accent-blue text-xs font-semibold hover:underline bg-accent-blue/5 px-3 py-1.5 rounded-lg border border-accent-blue/10"
+        >
+        Add more
+        </Link>
       </div>
 
       {error ? (
