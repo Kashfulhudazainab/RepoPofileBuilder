@@ -80,3 +80,34 @@ export const logout = (req, res) => {
   res.clearCookie('token')
   res.json({ message: 'Logged out' })
 }
+
+export const updateSocials = async (req, res) => {
+  try {
+    // Destructure from req.body.socials because that's what the frontend sends
+    const { linkedin, twitter, website, phone, email } = req.body.socials;
+
+    // Optional: If you also want to update the top-level email in the User model:
+    const topLevelEmail = req.body.email;
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { 
+        // Update the top-level email if provided
+        email: topLevelEmail, 
+        // Update the nested socials object
+        socials: { linkedin, twitter, website, phone, email } 
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Return the full user or just socials so the frontend can update state
+    res.json(user); 
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to update socials' });
+  }
+}

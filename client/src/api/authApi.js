@@ -17,3 +17,8 @@ export const logout = async () => {
   const res = await api.get('/api/auth/logout')
   return res.data
 }
+
+export const saveSocials = async (socials) => {
+  const res = await api.put('/api/auth/socials', socials)
+  return res.data
+}
